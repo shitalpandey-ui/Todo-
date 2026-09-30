@@ -11,7 +11,6 @@ const cookieOptions ={
     secure: process.env.NODE_ENV === 'production',
     sameState: 'Strict',
     maxAge : 30 * 24 *60 * 60 *1000 //30 days
-
 }
 
 const generateToken =(id) =>{
@@ -23,7 +22,7 @@ const generateToken =(id) =>{
 //Register
 
 router.post('/register', async(req,res)=>{
-    const { username, email, password } = req.body ;
+    const { name, email, password } = req.body ;
     if(!username || !email || !password){
         return res.status(400).json({ message: "Please Provide the required fields "});
     }
@@ -76,7 +75,7 @@ router.post('/login', async (req,res) => {
     });
 });
 
-router.get('/me', async(req,res)=>{
+router.get('/me',protect, async(req,res)=>{
     res.json(req.user);
     //return the info of logged in user from protect middleware
 });
