@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_PASSWORD: ASDF@098asd
       POSTGRES_DB: mydb
     ports:
       - "5432:5432"
