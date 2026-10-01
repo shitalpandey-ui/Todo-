@@ -10,4 +10,4 @@ pool.query('SELECT NOW()')
     .then(() => console.log('Database Connected'))
     .catch((err) => console.error('Database connection failed:', err));
 
-module.exports = pool;
+module.exports = { pool } ;

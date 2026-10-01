@@ -3,7 +3,7 @@ const cors = require('cors');
 const { pool } = require('./config/connectToDatabase');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const { authRoutes } = require('./routes/auth');
+const authRoutes  = require('./routes/auth');
 
 require('dotenv').config();
 

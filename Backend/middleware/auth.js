@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
-const { pool } = require('./config/connectToDatabase');
+const { pool } = require('../config/connectToDatabase');
 
-export const protect = async (req, res, next) => {
+ const protect = async (req, res, next) => {
       try {
        const token = req.cookies.token;
        if(!token){
@@ -26,3 +26,4 @@ export const protect = async (req, res, next) => {
       }
 
 }
+module.exports = { protect } 

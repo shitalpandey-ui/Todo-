@@ -6,6 +6,7 @@ services:
     ports:
       - "4000:4000"
     environment:
+      JWT_SECRET: 2fd18824ed4683e64294645eaa026d704bd966bc5793f3955aff77fa20223d1ce7e1df4e5836087ad12a006c61bc675e
       DATABASE_URL: postgresql://admin:mysecretpassword@postgres:5432/mydb
     depends_on:
       postgres:
@@ -16,6 +17,7 @@ services:
     container_name: my-postgres
     restart: unless-stopped
     environment:
+      
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: ASDF@098asd
       POSTGRES_DB: mydb
