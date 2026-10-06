@@ -14,8 +14,10 @@ const cookieOptions = {
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
 };
 
+
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+
 
 // Register
 router.post('/register', async (req, res) => {
@@ -78,10 +80,12 @@ router.post('/login', async (req, res) => {
   }
 });
 
+
 // Current user (set by protect middleware)
 router.get('/me', protect, (req, res) => {
   res.json(req.user);
 });
+
 
 // Logout
 router.post('/logout', (req, res) => {

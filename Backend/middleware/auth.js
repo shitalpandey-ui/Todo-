@@ -1,29 +1,30 @@
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/connectToDatabase');
 
- const protect = async (req, res, next) => {
-      try {
-       const token = req.cookies.token;
-       if(!token){
-        return res.status(401).json({ message:"Not authoried , no token "});
-       }
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
-        const user = await pool.query("SELECT id, name, email FROM users WHERE id = $1", [decoded.id]);
+const protect = async (req, res, next) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ message: 'Not authorized, no token' });
+    }
 
-        if(user.rows.length === 0){
-            return res
-            .statu(401)
-            .json({ message: "Not authorized, user not found"});
-        }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-          req.user = user.rows[0];
-          next();
+    const result = await pool.query(
+      'SELECT id, name, email FROM users WHERE id = $1',
+      [decoded.id]
+    );
 
-      }catch(error){
-        console.error(error);
-        res.status(401).json({ message: "Not authorized, token failed "});
-      }
+    if (result.rows.length === 0) {
+      return res.status(401).json({ message: 'Not authorized, user not found' });
+    }
 
-}
-module.exports = { protect } 
+    req.user = result.rows[0];
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
+};
+
+module.exports = { protect };

@@ -1,23 +1,27 @@
 services:
-  app:
-    build: .
-    container_name: my-app
+  backend:
+    build: ./backend
+    container_name: my-backend
     restart: unless-stopped
     ports:
       - "4000:4000"
     environment:
-      JWT_SECRET: 2fd18824ed4683e64294645eaa026d704bd966bc5793f3955aff77fa20223d1ce7e1df4e5836087ad12a006c61bc675e
-      DATABASE_URL: postgresql://admin:mysecretpassword@postgres:5432/mydb
+      JWT_SECRET: your_new_secret_here
+      DATABASE_URL: postgresql://admin:ASDF%40098asd@postgres:5432/mydb
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run dev
     depends_on:
       postgres:
         condition: service_healthy
 
+  
   postgres:
     image: postgres:16
     container_name: my-postgres
     restart: unless-stopped
     environment:
-      
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: ASDF@098asd
       POSTGRES_DB: mydb
