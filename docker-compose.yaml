@@ -17,20 +17,20 @@ services:
       postgres:
         condition: service_healthy
 
-    frontend:
-     build: ./frontend
-     container_name: my-frontend
-     restart: unless-stopped
-     working_dir: /app
-     ports:
-      "5173:5173"
-     environment:
-     CHOKIDAR_USEPOLLING: "true"
-     volumes:
-      -./frontend:/app
+  frontend:
+    build: ./frontend
+    container_name: my-frontend
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ./frontend:/app
       - /app/node_modules
-     command: npm run dev -- --host 0.0.0.0
-     depends_on:
+    command: npm run dev -- --host 0.0.0.0
+    depends_on:
       - backend
 
   postgres:
@@ -51,7 +51,6 @@ services:
       timeout: 5s
       retries: 5
 
-    
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
@@ -63,7 +62,7 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
-      - postgres  
+      - postgres
 
 volumes:
   pgdata:

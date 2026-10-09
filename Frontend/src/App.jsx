@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
+import Navbar from "./components/Navbar";
 
 /* ------------------------------------------------------------------ */
 /*  API CONFIG - change these to match your backend routes             */
@@ -31,10 +33,10 @@ async function request(path, { method = "GET", body, token } = {}) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Auth form                                                          */
+/*  Auth form (used by both /login and /register)                      */
 /* ------------------------------------------------------------------ */
-function AuthForm({ onAuth }) {
-  const [mode, setMode] = useState("login");
+function AuthForm({ mode, onAuth }) {
+  const isLogin = mode === "login";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -45,11 +47,11 @@ function AuthForm({ onAuth }) {
     setError("");
     setLoading(true);
     try {
-      if (mode === "register") {
+      if (!isLogin) {
         await request(ROUTES.register, { method: "POST", body: { email, password } });
       }
       const data = await request(ROUTES.login, { method: "POST", body: { email, password } });
-      onAuth(data.token);
+      onAuth(data.token); // the route guard then redirects to "/"
     } catch (err) {
       setError(err.message);
     } finally {
@@ -63,7 +65,7 @@ function AuthForm({ onAuth }) {
   return (
     <form onSubmit={submit} className="space-y-4">
       <h2 className="text-2xl font-semibold text-gray-900">
-        {mode === "login" ? "Log in to your list" : "Create an account"}
+        {isLogin ? "Log in to your list" : "Create an account"}
       </h2>
 
       <input
@@ -89,21 +91,17 @@ function AuthForm({ onAuth }) {
         disabled={loading}
         className="w-full rounded-lg bg-teal-700 py-2 font-medium text-white hover:bg-teal-800 disabled:opacity-60"
       >
-        {loading ? "Please wait..." : mode === "login" ? "Log in" : "Sign up"}
+        {loading ? "Please wait..." : isLogin ? "Log in" : "Sign up"}
       </button>
 
       <p className="text-center text-sm text-gray-600">
-        {mode === "login" ? "New here?" : "Already have an account?"}{" "}
-        <button
-          type="button"
-          onClick={() => {
-            setMode(mode === "login" ? "register" : "login");
-            setError("");
-          }}
+        {isLogin ? "New here?" : "Already have an account?"}{" "}
+        <Link
+          to={isLogin ? "/register" : "/login"}
           className="font-medium text-teal-700 underline"
         >
-          {mode === "login" ? "Create an account" : "Log in"}
-        </button>
+          {isLogin ? "Create an account" : "Log in"}
+        </Link>
       </p>
     </form>
   );
@@ -271,6 +269,10 @@ function TodoList({ token, onLogout }) {
 /* ------------------------------------------------------------------ */
 /*  App                                                                */
 /* ------------------------------------------------------------------ */
+function Card({ children }) {
+  return <div className="w-full max-w-md rounded-2xl bg-gray-50 p-6 shadow-xl">{children}</div>;
+}
+
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem("token"));
 
@@ -285,15 +287,40 @@ function App() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-800 p-4 text-white">
-      <div className="w-full max-w-md rounded-2xl bg-gray-50 p-6 shadow-xl">
-        {token ? (
-          <TodoList token={token} onLogout={handleLogout} />
-        ) : (
-          <AuthForm onAuth={handleAuth} />
-        )}
+    <Router>
+      <div className="min-h-screen bg-gray-800 text-white">
+        <Navbar />
+        <main className="flex items-center justify-center p-4 pt-10">
+          <Card>
+            <Routes>
+              {/* Home: only for logged-in users */}
+              <Route
+                path="/"
+                element={
+                  token ? (
+                    <TodoList token={token} onLogout={handleLogout} />
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+
+              {/* Login / Register: logged-in users are sent to Home */}
+              <Route
+                path="/login"
+                element={token ? <Navigate to="/" replace /> : <AuthForm mode="login" onAuth={handleAuth} />}
+              />
+              <Route
+                path="/register"
+                element={token ? <Navigate to="/" replace /> : <AuthForm mode="register" onAuth={handleAuth} />}
+              />
+
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Card>
+        </main>
       </div>
-    </div>
+    </Router>
   );
 }
 
