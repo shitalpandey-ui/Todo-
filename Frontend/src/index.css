@@ -1,0 +1,45 @@
+/* Tailwind CSS v4 */
+@import "tailwindcss";
+
+/* --- If you use Tailwind CSS v3, replace the line above with: ---
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+------------------------------------------------------------------ */
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background-color: #1f2937; /* matches bg-gray-800 so no white flash on load */
+  }
+
+  /* Visible keyboard focus for buttons and checkboxes */
+  button:focus-visible,
+  input[type="checkbox"]:focus-visible {
+    outline: 2px solid #0f766e;
+    outline-offset: 2px;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
