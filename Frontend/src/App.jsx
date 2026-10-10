@@ -2,39 +2,37 @@ import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
 import Navbar from "./components/Navbar";
 
-/* ------------------------------------------------------------------ */
-/*  API CONFIG - change these to match your backend routes             */
-/* ------------------------------------------------------------------ */
+/*  API CONFIG - must match your backend (port + routes)               */
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const ROUTES = {
-  login: "/api/auth/login", // POST { email, password } -> { token }
+  login: "/api/auth/login", // POST { email, password } -> sets httpOnly cookie
   register: "/api/auth/register", // POST { email, password }
+  me: "/api/auth/me", // GET -> current user (needs valid cookie)
+  logout: "/api/auth/logout", // POST -> clears cookie
   todos: "/api/tasks", // GET, POST { title }
   todo: (id) => `/api/tasks/${id}`, // PUT { completed } / DELETE
 };
 
-/* ------------------------------------------------------------------ */
-/*  Small fetch helper that adds the JWT and parses errors             */
-/* ------------------------------------------------------------------ */
-async function request(path, { method = "GET", body, token } = {}) {
+/*  Fetch helper: sends the auth cookie and attaches the HTTP status   */
+/*  to errors so callers can react to 401                              */
+async function request(path, { method = "GET", body } = {}) {
   const res = await fetch(API + path, {
     method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+    credentials: "include", // required for the browser to send/receive cookies
+    headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
   });
 
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || data.error || "Request failed");
+  if (!res.ok) {
+    const err = new Error(data.message || data.error || "Request failed");
+    err.status = res.status;
+    throw err;
+  }
   return data;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Auth form (used by both /login and /register)                      */
-/* ------------------------------------------------------------------ */
 function AuthForm({ mode, onAuth }) {
   const isLogin = mode === "login";
   const [email, setEmail] = useState("");
@@ -50,8 +48,8 @@ function AuthForm({ mode, onAuth }) {
       if (!isLogin) {
         await request(ROUTES.register, { method: "POST", body: { email, password } });
       }
-      const data = await request(ROUTES.login, { method: "POST", body: { email, password } });
-      onAuth(data.token); // the route guard then redirects to "/"
+      await request(ROUTES.login, { method: "POST", body: { email, password } });
+      await onAuth(); // App re-checks the session via /me, then the route guard redirects to "/"
     } catch (err) {
       setError(err.message);
     } finally {
@@ -112,7 +110,7 @@ function AuthForm({ mode, onAuth }) {
 /* ------------------------------------------------------------------ */
 const FILTERS = ["all", "active", "done"];
 
-function TodoList({ token, onLogout }) {
+function TodoList({ onLogout }) {
   const [todos, setTodos] = useState([]);
   const [title, setTitle] = useState("");
   const [filter, setFilter] = useState("all");
@@ -120,18 +118,18 @@ function TodoList({ token, onLogout }) {
   const [error, setError] = useState("");
 
   const fail = (err) => {
-    // Expired or invalid token: send the person back to the login screen
-    if (/token|unauthor|jwt/i.test(err.message)) return onLogout();
+    // Expired or missing session: send the person back to the login screen
+    if (err.status === 401) return onLogout();
     setError(err.message);
   };
 
   useEffect(() => {
-    request(ROUTES.todos, { token })
+    request(ROUTES.todos)
       .then((data) => setTodos(Array.isArray(data) ? data : data.todos || []))
       .catch(fail)
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, []);
 
   const addTodo = async (e) => {
     e.preventDefault();
@@ -139,7 +137,7 @@ function TodoList({ token, onLogout }) {
     if (!text) return;
     setError("");
     try {
-      const created = await request(ROUTES.todos, { method: "POST", token, body: { title: text } });
+      const created = await request(ROUTES.todos, { method: "POST", body: { title: text } });
       setTodos((prev) => [created.todo || created, ...prev]);
       setTitle("");
     } catch (err) {
@@ -152,7 +150,6 @@ function TodoList({ token, onLogout }) {
     try {
       const updated = await request(ROUTES.todo(todo.id), {
         method: "PUT",
-        token,
         body: { completed: !todo.completed },
       });
       const next = updated.todo || updated;
@@ -167,7 +164,7 @@ function TodoList({ token, onLogout }) {
   const deleteTodo = async (id) => {
     setError("");
     try {
-      await request(ROUTES.todo(id), { method: "DELETE", token });
+      await request(ROUTES.todo(id), { method: "DELETE" });
       setTodos((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
       fail(err);
@@ -266,25 +263,43 @@ function TodoList({ token, onLogout }) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  App                                                                */
-/* ------------------------------------------------------------------ */
 function Card({ children }) {
   return <div className="w-full max-w-md rounded-2xl bg-gray-50 p-6 shadow-xl">{children}</div>;
 }
 
 function App() {
-  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleAuth = (newToken) => {
-    localStorage.setItem("token", newToken);
-    setToken(newToken);
+  // Ask the backend who we are (the browser sends the cookie automatically)
+  const fetchUser = async () => {
+    try {
+      const data = await request(ROUTES.me);
+      setUser(data.user || data);
+    } catch {
+      setUser(null); // 401 just means "not logged in"
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await request(ROUTES.logout, { method: "POST" });
+    } catch {
+      // even if the request fails, drop the local session state
+    }
+    setUser(null);
   };
+
+  // Prevents a logged-in user from being bounced to /login on page refresh
+  if (loading) {
+    return <div className="min-h-screen bg-gray-800 p-10 text-white">Loading...</div>;
+  }
 
   return (
     <Router>
@@ -297,22 +312,22 @@ function App() {
               <Route
                 path="/"
                 element={
-                  token ? (
-                    <TodoList token={token} onLogout={handleLogout} />
-                  ) : (
-                    <Navigate to="/login" replace />
-                  )
+                  user ? <TodoList onLogout={handleLogout} /> : <Navigate to="/login" replace />
                 }
               />
 
               {/* Login / Register: logged-in users are sent to Home */}
               <Route
                 path="/login"
-                element={token ? <Navigate to="/" replace /> : <AuthForm mode="login" onAuth={handleAuth} />}
+                element={
+                  user ? <Navigate to="/" replace /> : <AuthForm mode="login" onAuth={fetchUser} />
+                }
               />
               <Route
                 path="/register"
-                element={token ? <Navigate to="/" replace /> : <AuthForm mode="register" onAuth={handleAuth} />}
+                element={
+                  user ? <Navigate to="/" replace /> : <AuthForm mode="register" onAuth={fetchUser} />
+                }
               />
 
               <Route path="*" element={<Navigate to="/" replace />} />
