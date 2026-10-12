@@ -17,6 +17,7 @@ const cookieOptions = {
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
@@ -24,14 +25,12 @@ router.post('/register', async (req, res) => {
     const name = req.body.name?.trim();
     const email = req.body.email?.trim().toLowerCase();
  
-    // 1. All four fields are required
     if (!name || !email || !password || !confirmPassword) {
       return res.status(400).json({
         message: 'Name, email, password and confirm password are required',
       });
     }
  
-    // 2. Validate the values
     if (!EMAIL_REGEX.test(email)) {
       return res.status(400).json({ message: 'Please enter a valid email address' });
     }

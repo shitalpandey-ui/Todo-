@@ -1,49 +1,13 @@
-// src/AuthForm.jsx
-// Login + Sign up page (React + React Router + Tailwind)
+// src/pages/Register.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { request, ROUTES } from "./api";
+import { request, ROUTES } from "../api";
 
-const labelClass =
-  "block text-sm font-mono font-bold uppercase tracking-wider text-[#7A7062]";
-
+const labelClass = "block text-sm font-medium text-gray-700";
 const inputClass =
-  "block w-full rounded-xl border border-[#E0D8CC] bg-white px-4 py-3 text-base text-[#1C1815] shadow-sm placeholder:text-gray-400 focus:border-[#f26522] focus:outline-none focus:ring-1 focus:ring-[#f26522]";
+  "mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/30";
 
-function Field({ id, label, ...props }) {
-  return (
-    <div className="space-y-1">
-      <label htmlFor={id} className={labelClass}>
-        {label}
-      </label>
-      <input id={id} className={inputClass} {...props} />
-    </div>
-  );
-}
-
-function Tab({ to, active, children }) {
-  return (
-    <Link
-      to={to}
-      aria-current={active ? "page" : undefined}
-      className={`flex w-1/2 items-center justify-center rounded-full text-lg font-semibold transition-colors ${
-        active
-          ? "bg-[#f26522] text-white shadow-md"
-          : "text-[#7A7062] hover:bg-[#f26522] hover:text-white"
-      }`}
-    >
-      {children}
-    </Link>
-  );
-}
-
-export default function AuthForm({ mode = "login", onAuth }) {
-  const isLogin = mode === "login";
-
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
+export default function Register({ onAuth }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -51,32 +15,35 @@ export default function AuthForm({ mode = "login", onAuth }) {
     e.preventDefault();
     setError("");
 
-    if (!isLogin) {
-      if (password.length < 6) {
-        return setError("Password must be at least 6 characters");
-      }
-      if (password !== passwordConfirm) {
-        return setError("Passwords do not match");
-      }
+    // Read values straight from the form so browser autofill is always captured
+    const form = new FormData(e.currentTarget);
+    const name = (form.get("name") || "").toString().trim();
+    const email = (form.get("email") || "").toString().trim();
+    const password = (form.get("password") || "").toString();
+    const passwordConfirm = (form.get("passwordConfirm") || "").toString();
+
+    if (!name || !email || !password || !passwordConfirm) {
+      return setError("Please fill in all fields");
+    }
+    if (password.length < 6) {
+      return setError("Password must be at least 6 characters");
+    }
+    if (password !== passwordConfirm) {
+      return setError("Passwords do not match");
     }
 
     setLoading(true);
     try {
-      if (isLogin) {
-        await request(ROUTES.login, { method: "POST", body: { email, password } });
-      } else {
-        // The backend creates the account and sets the login cookie
-        await request(ROUTES.register, {
-          method: "POST",
-          body: {
-            name: name.trim(),
-            email,
-            password,
-            confirmPassword: confirmPassword,
-          },
-        });
-      }
-      await onAuth(); // App re-checks the session via /me, then redirects to "/"
+      await request(ROUTES.register, {
+        method: "POST",
+        body: {
+          name,
+          email,
+          password,
+          confirmPassword: passwordConfirm,
+        },
+      });
+      await onAuth(); // App re-checks the session, then redirects to "/"
     } catch (err) {
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
@@ -85,121 +52,109 @@ export default function AuthForm({ mode = "login", onAuth }) {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-[#14100E] px-6 py-12">
-      <div className="flex min-h-[600px] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-[#2A2420] bg-[#1C1815] shadow-2xl lg:flex-row">
-        {/* Left side: brand panel (hidden on small screens) */}
-        <div className="hidden flex-col justify-between p-12 text-[#F5EFE6] lg:flex lg:w-1/2">
-          <span className="text-2xl font-semibold tracking-tight">Taskly</span>
-
-          <div className="space-y-4">
-            <h1 className="text-4xl font-semibold leading-tight">
-              Get today's tasks out of your head.
-            </h1>
-            <p className="max-w-sm text-base text-[#B8AE9E]">
-              Add what needs doing, tick it off, and pick up where you left off on any device.
-            </p>
-          </div>
-
-          <p className="text-sm text-[#7A7062]">Your tasks stay private to your account.</p>
+    <div className="flex min-h-screen items-center justify-center bg-gray-800 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-gray-50 p-6 shadow-xl">
+        {/* Tabs */}
+        <div className="mb-6 flex rounded-full bg-gray-200 p-1">
+          <Link
+            to="/login"
+            className="flex w-1/2 items-center justify-center rounded-full py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-300 hover:text-gray-900"
+          >
+            Log in
+          </Link>
+          <Link
+            to="/register"
+            aria-current="page"
+            className="flex w-1/2 items-center justify-center rounded-full bg-teal-700 py-2 text-sm font-medium text-white shadow-sm"
+          >
+            Sign up
+          </Link>
         </div>
 
-        {/* Right side: form */}
-        <div className="flex w-full items-center justify-center bg-[#F5EFE6] p-8 text-[#1C1815] lg:w-1/2 lg:p-12">
-          <div className="w-full max-w-md">
-            {/* Tabs: Log in / Sign up */}
-            <div className="mb-8 flex h-16 rounded-full bg-[#E8E2D5] p-2">
-              <Tab to="/login" active={isLogin}>
-                Log in
-              </Tab>
-              <Tab to="/register" active={!isLogin}>
-                Sign up
-              </Tab>
-            </div>
+        <h1 className="mb-5 text-2xl font-semibold text-gray-900">Create an account</h1>
 
-            {error && (
-              <div
-                role="alert"
-                className="mb-5 rounded-lg border border-red-200 bg-red-100 p-4 text-sm text-red-700"
-              >
-                {error}
-              </div>
-            )}
-
-            <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-              {!isLogin && (
-                <Field
-                  id="name"
-                  label="Full name"
-                  type="text"
-                  required
-                  autoComplete="name"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              )}
-
-              <Field
-                id="email"
-                label="Email"
-                type="email"
-                required
-                autoComplete="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-
-              <Field
-                id="password"
-                label="Password"
-                type="password"
-                required
-                autoComplete={isLogin ? "current-password" : "new-password"}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-
-              {!isLogin && (
-                <Field
-                  id="confirmPassword"
-                  label="Confirm password"
-                  type="password"
-                  required
-                  autoComplete="new-password"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setPasswordConfirm(e.target.value)}
-                />
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-1 w-full rounded-xl bg-[#1C1815] px-4 py-3.5 text-lg font-semibold text-white shadow-md transition-all hover:bg-black focus:outline-none focus:ring-2 focus:ring-[#1C1815] focus:ring-offset-2 disabled:opacity-50"
-              >
-                {loading
-                  ? isLogin
-                    ? "Logging in..."
-                    : "Creating account..."
-                  : isLogin
-                    ? "Log in"
-                    : "Sign up"}
-              </button>
-            </form>
-
-            <p className="mt-6 text-center text-base text-[#7A7062]">
-              {isLogin ? "New here?" : "Already have an account?"}{" "}
-              <Link
-                to={isLogin ? "/register" : "/login"}
-                className="font-medium text-[#C1442E] hover:underline"
-              >
-                {isLogin ? "Create an account" : "Log in"}
-              </Link>
-            </p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="name" className={labelClass}>
+              Full name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              autoComplete="name"
+              placeholder="John Doe"
+              className={inputClass}
+            />
           </div>
-        </div>
+
+          <div>
+            <label htmlFor="email" className={labelClass}>
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
+              className={inputClass}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className={labelClass}>
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              autoComplete="new-password"
+              placeholder="At least 6 characters"
+              className={inputClass}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="passwordConfirm" className={labelClass}>
+              Confirm password
+            </label>
+            <input
+              id="passwordConfirm"
+              name="passwordConfirm"
+              type="password"
+              required
+              autoComplete="new-password"
+              placeholder="Repeat your password"
+              className={inputClass}
+            />
+          </div>
+
+          {error && (
+            <p role="alert" className="text-sm text-red-600">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-lg bg-teal-700 py-2 font-medium text-white hover:bg-teal-800 disabled:opacity-60"
+          >
+            {loading ? "Creating account..." : "Sign up"}
+          </button>
+        </form>
+
+        <p className="mt-5 text-center text-sm text-gray-600">
+          Already have an account?{" "}
+          <Link to="/login" className="font-medium text-teal-700 underline">
+            Log in
+          </Link>
+        </p>
       </div>
     </div>
   );
