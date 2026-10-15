@@ -1,4 +1,4 @@
-
+// src/App.jsx
 import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
@@ -12,16 +12,15 @@ function App() {
 
   // Ask the backend who we are (the browser sends the cookie automatically)
   const fetchUser = async () => {
-  try {
-    const data = await request(ROUTES.me);
-    setUser(data.user || data);
-  } catch (err) {
-    if (err.status !== 401) console.error("Auth check failed:", err);
-    setUser(null);
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      const data = await request(ROUTES.me);
+       setUser(data.user ?? null);
+    } catch {
+      setUser(null); // 401 just means "not logged in"
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchUser();

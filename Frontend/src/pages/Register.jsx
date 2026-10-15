@@ -8,6 +8,10 @@ const inputClass =
   "mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/30";
 
 export default function Register({ onAuth }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -15,16 +19,6 @@ export default function Register({ onAuth }) {
     e.preventDefault();
     setError("");
 
-    // Read values straight from the form so browser autofill is always captured
-    const form = new FormData(e.currentTarget);
-    const name = (form.get("name") || "").toString().trim();
-    const email = (form.get("email") || "").toString().trim();
-    const password = (form.get("password") || "").toString();
-    const passwordConfirm = (form.get("passwordConfirm") || "").toString();
-
-    if (!name || !email || !password || !passwordConfirm) {
-      return setError("Please fill in all fields");
-    }
     if (password.length < 6) {
       return setError("Password must be at least 6 characters");
     }
@@ -34,10 +28,11 @@ export default function Register({ onAuth }) {
 
     setLoading(true);
     try {
+      // The backend creates the account AND sets the login cookie
       await request(ROUTES.register, {
         method: "POST",
         body: {
-          name,
+          name: name.trim(),
           email,
           password,
           confirmPassword: passwordConfirm,
@@ -80,11 +75,12 @@ export default function Register({ onAuth }) {
             </label>
             <input
               id="name"
-              name="name"
               type="text"
               required
               autoComplete="name"
               placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className={inputClass}
             />
           </div>
@@ -95,11 +91,12 @@ export default function Register({ onAuth }) {
             </label>
             <input
               id="email"
-              name="email"
               type="email"
               required
               autoComplete="email"
               placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className={inputClass}
             />
           </div>
@@ -110,11 +107,12 @@ export default function Register({ onAuth }) {
             </label>
             <input
               id="password"
-              name="password"
               type="password"
               required
               autoComplete="new-password"
               placeholder="At least 6 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className={inputClass}
             />
           </div>
@@ -125,11 +123,12 @@ export default function Register({ onAuth }) {
             </label>
             <input
               id="passwordConfirm"
-              name="passwordConfirm"
               type="password"
               required
               autoComplete="new-password"
               placeholder="Repeat your password"
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
               className={inputClass}
             />
           </div>

@@ -8,28 +8,17 @@ const inputClass =
   "mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/30";
 
 export default function Login({ onAuth }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    // Read values straight from the form so browser autofill is always captured
-    const form = new FormData(e.currentTarget);
-    const email = (form.get("email") || "").toString().trim();
-    const password = (form.get("password") || "").toString();
-
-    if (!email || !password) {
-      return setError("Please enter your email and password");
-    }
-
     setLoading(true);
     try {
-      await request(ROUTES.login, {
-        method: "POST",
-        body: { email, password },
-      });
+      await request(ROUTES.login, { method: "POST", body: { email, password } });
       await onAuth(); // App re-checks the session, then redirects to "/"
     } catch (err) {
       setError(err.message || "Something went wrong. Please try again.");
@@ -67,11 +56,12 @@ export default function Login({ onAuth }) {
             </label>
             <input
               id="email"
-              name="email"
               type="email"
               required
               autoComplete="email"
               placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className={inputClass}
             />
           </div>
@@ -82,11 +72,12 @@ export default function Login({ onAuth }) {
             </label>
             <input
               id="password"
-              name="password"
               type="password"
               required
               autoComplete="current-password"
               placeholder="Your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className={inputClass}
             />
           </div>
