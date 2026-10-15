@@ -1,6 +1,7 @@
 // src/pages/Home.jsx
 import { useEffect, useId, useState } from "react";
 import Navbar from "../components/Navbar";
+import About from "../components/About";
 import { request, ROUTES } from "../api";
 
 const STATUSES = ["all", "active", "done"];
@@ -79,7 +80,6 @@ function matchesDate(t, filter) {
   }
 }
 
-/* ---------- small components ---------- */
 
 function Select({ label, value, onChange, children }) {
   return (
@@ -92,7 +92,6 @@ function Select({ label, value, onChange, children }) {
   );
 }
 
-// Used for both adding and editing a task
 function TaskForm({ initial = EMPTY_FORM, submitLabel, onSubmit, onCancel, categories, resetOnSave, startOpen }) {
   const [values, setValues] = useState(initial);
   const [open, setOpen] = useState(!!startOpen);
@@ -200,7 +199,6 @@ function TaskForm({ initial = EMPTY_FORM, submitLabel, onSubmit, onCancel, categ
   );
 }
 
-/* ---------- page ---------- */
 
 export default function Home({ user, onLogout }) {
   const [todos, setTodos] = useState([]);
@@ -217,7 +215,6 @@ export default function Home({ user, onLogout }) {
   const [dateFilter, setDateFilter] = useState("any");
   const [sort, setSort] = useState("created");
 
-  // manual order (list of ids, kept in this browser)
   const [order, setOrder] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem(ORDER_KEY)) || [];
@@ -229,7 +226,6 @@ export default function Home({ user, onLogout }) {
   const [overId, setOverId] = useState(null);
 
   const fail = (err) => {
-    // Expired or missing session: send the person back to the login screen
     if (err.status === 401) return onLogout();
     setError(err.message);
   };
@@ -242,7 +238,6 @@ export default function Home({ user, onLogout }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ----- data actions ----- */
 
   const addTodo = async (payload) => {
     setError("");
@@ -288,7 +283,6 @@ export default function Home({ user, onLogout }) {
     }
   };
 
-  /* ----- manual ordering ----- */
 
   const rank = (id) => order.indexOf(id); // ids not yet in the list (new tasks) come first
 
@@ -297,7 +291,6 @@ export default function Home({ user, onLogout }) {
     try {
       localStorage.setItem(ORDER_KEY, JSON.stringify(ids));
     } catch {
-      // storage unavailable: order lasts for this session only
     }
   };
 
@@ -311,8 +304,7 @@ export default function Home({ user, onLogout }) {
     ids.splice(to, 0, moved);
     saveOrder(ids);
   };
-
-  /* ----- derived lists ----- */
+   <About />
 
   const categories = [...new Set(todos.map((t) => (t.category || "").trim()).filter(Boolean))].sort();
   const allTags = [...new Set(todos.flatMap(tagsOf))].sort();
@@ -333,7 +325,6 @@ export default function Home({ user, onLogout }) {
     return true;
   });
 
-  // `todos` arrives newest-first, so original position works as a created-date fallback
   const position = new Map(todos.map((t, i) => [t.id, i]));
   const createdAt = (t) => (t.createdAt ? new Date(t.createdAt).getTime() : -position.get(t.id));
   const comparators = {
@@ -384,7 +375,6 @@ export default function Home({ user, onLogout }) {
 
           <TaskForm submitLabel="Add task" onSubmit={addTodo} categories={categories} resetOnSave />
 
-          {/* Search + filters */}
           <section className="space-y-3 border-t border-gray-200 pt-4" aria-label="Search and filters">
             <input
               type="search"
@@ -634,6 +624,7 @@ export default function Home({ user, onLogout }) {
           </ul>
         </div>
       </main>
+       <About />
     </div>
   );
 }
