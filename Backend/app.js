@@ -4,7 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const { pool } = require('./config/connectToDatabase');
+const { pool, initializeDatabase } = require('./config/connectToDatabase');
 const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/task.js');
 
@@ -25,8 +25,18 @@ app.use(cors({
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 
-app.listen(PORT, () => console.log(`Server is running at ${PORT}`));
+const startServer = async () => {
+  try {
+    await initializeDatabase();
+    app.listen(PORT, () => console.log(`Server is running at ${PORT}`));
+  } catch (err) {
+    console.error('Database initialization failed:', err);
+    await pool.end();
+    process.exitCode = 1;
+  }
+};
 
+startServer();
 
 
 
