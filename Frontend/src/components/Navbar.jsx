@@ -11,7 +11,6 @@ export default function Navbar({ user, onLogout }) {
     if (location.pathname === "/") {
       scroll();
     } else {
-      // go to the home page first, then scroll once it has rendered
       navigate("/");
       setTimeout(scroll, 100);
     }
