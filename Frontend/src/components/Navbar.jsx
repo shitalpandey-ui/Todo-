@@ -10,10 +10,10 @@ export default function Navbar({ user, onLogout }) {
 
         {user ? (
           <div className="flex items-center gap-4 text-sm">
-            <span className="hidden text-gray-400 sm:inline">{user.email}</span>
+            <span className="hidden text-gray-400 sm:inline">{user.name}</span>
             <button
               onClick={onLogout}
-              className="text-gray-300 underline hover:text-white"
+              className="text-gray-300 hover:text-white rounded-lg bg-teal-700 px-4 py-2 items-center justify-center text-sm font-medium  shadow-sm"
             >
               Log out
             </button>
