@@ -2,7 +2,6 @@ import { useState } from "react";
 
 const items = [
   {
-    icon: "💡",
     title: "What is this TODO app?",
     body: (
       <>
@@ -14,7 +13,6 @@ const items = [
     ),
   },
   {
-    icon: "⚡",
     title: "Key features",
     body: (
       <ul className="space-y-2">
@@ -36,7 +34,6 @@ const items = [
     ),
   },
   {
-    icon: "🚀",
     title: "How to use it",
     body: (
       <ol className="space-y-2">
@@ -57,7 +54,6 @@ const items = [
     ),
   },
   {
-    icon: "🛠️",
     title: "Built with",
     body: (
       <div className="flex flex-wrap gap-1.5">

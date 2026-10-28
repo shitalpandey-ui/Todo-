@@ -24,7 +24,7 @@ export default function Navbar({ user, onLogout }) {
         </Link>
 
         {user ? (
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-6 text-sm">
             <span className="hidden text-gray-400 sm:inline">{user.name}</span>
             <button
               onClick={scrollToAbout}
