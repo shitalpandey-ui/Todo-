@@ -5,7 +5,8 @@ const items = [
     title: "What is this TODO app?",
     body: (
       <>
-        <strong className="text-gray-900">A simple place to plan your day.</strong>{" "}
+        <strong className="text-gray-900 dark:text-white"></strong>{" "}
+        A simple place to plan your day.
         Create tasks, mark them as done, edit them when plans change, and
         delete them when you no longer need them. Every task is saved to your
         account, so your list is waiting for you whenever you log in.
@@ -24,7 +25,7 @@ const items = [
           "Responsive design for phone and desktop",
         ].map((f) => (
           <li key={f} className="flex items-start gap-2">
-            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-700">
+            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-700 dark:bg-teal-900/50 dark:text-teal-300">
               ✓
             </span>
             {f}
@@ -61,7 +62,7 @@ const items = [
           (tech) => (
             <span
               key={tech}
-              className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-800"
+              className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-800 dark:bg-teal-900/40 dark:text-teal-300"
             >
               {tech}
             </span>
@@ -84,10 +85,10 @@ export default function About() {
 
   return (
     <section id="about" className="scroll-mt-14 px-4 pb-16 pt-6">
-      <div className="mx-auto w-full max-w-10xl space-y-6 rounded-2xl bg-gray-50 p-6 shadow-xl sm:p-10">
+      <div className="mx-auto w-full max-w-10xl space-y-6 rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900 sm:p-10">
         <header>
-          <h2 className="text-3xl font-semibold text-gray-900">About Taskly</h2>
-          <p className="mt-1 text-base text-gray-600">
+          <h2 className="text-3xl font-semibold text-gray-900 dark:text-white">About Taskly</h2>
+          <p className="mt-1 text-base text-gray-600 dark:text-gray-400">
             Everything you need to know about our TODO app.
           </p>
         </header>
@@ -98,8 +99,10 @@ export default function About() {
             return (
               <div
                 key={item.title}
-                className={`overflow-hidden rounded-lg border border-l-4 border-gray-200 bg-white transition-colors ${
-                  isOpen ? "border-l-teal-600" : "border-l-gray-300 hover:border-l-teal-500"
+                className={`overflow-hidden rounded-lg border border-l-4 border-gray-200 bg-white transition-colors dark:border-gray-700 dark:bg-gray-800 ${
+                  isOpen
+                    ? "border-l-teal-600"
+                    : "border-l-gray-300 hover:border-l-teal-500 dark:border-l-gray-600 dark:hover:border-l-teal-500"
                 }`}
               >
                 <h3>
@@ -108,15 +111,17 @@ export default function About() {
                     onClick={() => toggle(index)}
                     aria-expanded={isOpen}
                     aria-controls={`about-panel-${index}`}
-                    className="flex w-full items-center gap-3 px-4 py-4 text-left font-medium text-gray-900"
+                    className="flex w-full items-center gap-3 px-4 py-4 text-left font-medium text-gray-900 dark:text-white"
                   >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-base">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-base dark:bg-teal-900/40">
                       {item.icon}
                     </span>
                     <span className="flex-1">{item.title}</span>
                     <svg
                       className={`h-5 w-5 shrink-0 transition-transform duration-200 ${
-                        isOpen ? "rotate-180 text-teal-700" : "text-gray-400"
+                        isOpen
+                          ? "rotate-180 text-teal-700 dark:text-teal-400"
+                          : "text-gray-400"
                       }`}
                       fill="none"
                       stroke="currentColor"
@@ -140,7 +145,7 @@ export default function About() {
                   }`}
                 >
                   <div className="overflow-hidden">
-                    <div className="px-5 pb-5 pl-16 text-sm leading-relaxed text-gray-600">
+                    <div className="px-5 pb-5 pl-16 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
                       {item.body}
                     </div>
                   </div>
@@ -151,8 +156,8 @@ export default function About() {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-          <p className="text-sm text-gray-600">Ready to get things done?</p>
+        <div className="flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700">
+          <p className="text-sm text-gray-600 dark:text-gray-400">Ready to get things done?</p>
           <button
             type="button"
             onClick={backToTop}

@@ -1,4 +1,3 @@
-// src/pages/Home.jsx
 import { useEffect, useId, useState } from "react";
 import Navbar from "../components/Navbar";
 import About from "../components/About";
@@ -8,9 +7,9 @@ const STATUSES = ["all", "active", "done"];
 const PRIORITIES = ["low", "medium", "high"];
 const PRIORITY_WEIGHT = { high: 0, medium: 1, low: 2 };
 const PRIORITY_STYLE = {
-  high: { badge: "bg-red-100 text-red-700", bar: "border-l-red-500" },
-  medium: { badge: "bg-amber-100 text-amber-800", bar: "border-l-amber-400" },
-  low: { badge: "bg-sky-100 text-sky-700", bar: "border-l-sky-400" },
+  high: { badge: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300", bar: "border-l-red-500" },
+  medium: { badge: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300", bar: "border-l-amber-400" },
+  low: { badge: "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300", bar: "border-l-sky-400" },
 };
 const DATE_FILTERS = [
   ["any", "Any date"],
@@ -30,9 +29,7 @@ const DAY = 86400000;
 const EMPTY_FORM = { title: "", dueDate: "", dueTime: "", priority: "medium", category: "", tags: "" };
 
 const inputCls =
-  "rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/30";
-
-/* ---------- helpers ---------- */
+  "rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/30 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400";
 
 const tagsOf = (t) => (Array.isArray(t.tags) ? t.tags : []);
 const parseTags = (s) => [
@@ -80,10 +77,9 @@ function matchesDate(t, filter) {
   }
 }
 
-
 function Select({ label, value, onChange, children }) {
   return (
-    <label className="flex flex-col gap-1 text-xs text-gray-600">
+    <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-300">
       {label}
       <select value={value} onChange={(e) => onChange(e.target.value)} className={inputCls}>
         {children}
@@ -131,7 +127,7 @@ function TaskForm({ initial = EMPTY_FORM, submitLabel, onSubmit, onCancel, categ
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-lg bg-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-300"
+            className="rounded-lg bg-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
           >
             Cancel
           </button>
@@ -142,25 +138,25 @@ function TaskForm({ initial = EMPTY_FORM, submitLabel, onSubmit, onCancel, categ
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="text-sm text-teal-700 hover:underline"
+        className="text-sm text-teal-700 hover:underline dark:text-teal-400"
       >
         {open ? "Hide details" : "Add details"}
       </button>
 
       {open && (
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-xs text-gray-600">
+          <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-300">
             Due date
             <input type="date" value={values.dueDate} onChange={set("dueDate")} className={inputCls} />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-gray-600">
+          <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-300">
             Due time
             <input
               type="time"
               value={values.dueTime}
               onChange={set("dueTime")}
               disabled={!values.dueDate}
-              className={`${inputCls} disabled:bg-gray-100 disabled:text-gray-400`}
+              className={`${inputCls} disabled:bg-gray-100 disabled:text-gray-400 dark:disabled:bg-gray-800 dark:disabled:text-gray-500`}
             />
           </label>
           <Select
@@ -174,7 +170,7 @@ function TaskForm({ initial = EMPTY_FORM, submitLabel, onSubmit, onCancel, categ
               </option>
             ))}
           </Select>
-          <label className="flex flex-col gap-1 text-xs text-gray-600">
+          <label className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-300">
             List or project
             <input
               value={values.category}
@@ -189,7 +185,7 @@ function TaskForm({ initial = EMPTY_FORM, submitLabel, onSubmit, onCancel, categ
               ))}
             </datalist>
           </label>
-          <label className="col-span-2 flex flex-col gap-1 text-xs text-gray-600">
+          <label className="col-span-2 flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-300">
             Tags (separate with commas)
             <input value={values.tags} onChange={set("tags")} placeholder="e.g. errands, urgent" className={inputCls} />
           </label>
@@ -198,7 +194,6 @@ function TaskForm({ initial = EMPTY_FORM, submitLabel, onSubmit, onCancel, categ
     </form>
   );
 }
-
 
 export default function Home({ user, onLogout }) {
   const [todos, setTodos] = useState([]);
@@ -237,7 +232,6 @@ export default function Home({ user, onLogout }) {
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
 
   const addTodo = async (payload) => {
     setError("");
@@ -283,7 +277,6 @@ export default function Home({ user, onLogout }) {
     }
   };
 
-
   const rank = (id) => order.indexOf(id); // ids not yet in the list (new tasks) come first
 
   const saveOrder = (ids) => {
@@ -291,6 +284,7 @@ export default function Home({ user, onLogout }) {
     try {
       localStorage.setItem(ORDER_KEY, JSON.stringify(ids));
     } catch {
+      // storage unavailable; order just won't persist
     }
   };
 
@@ -304,7 +298,6 @@ export default function Home({ user, onLogout }) {
     ids.splice(to, 0, moved);
     saveOrder(ids);
   };
-   <About />
 
   const categories = [...new Set(todos.map((t) => (t.category || "").trim()).filter(Boolean))].sort();
   const allTags = [...new Set(todos.flatMap(tagsOf))].sort();
@@ -361,21 +354,24 @@ export default function Home({ user, onLogout }) {
   const manual = sort === "manual";
 
   return (
-    <div className="min-h-screen bg-gray-800 text-white">
+    <div className="min-h-screen bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white">
       <Navbar user={user} onLogout={onLogout} />
 
       <main className="flex items-center justify-center p-4 pt-10">
-        <div className="w-full max-w-2xl space-y-5 rounded-2xl bg-gray-50 p-6 shadow-xl">
+        <div className="w-full max-w-2xl space-y-5 rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
           <header>
-            <h1 className="text-2xl font-semibold text-gray-900">Today's tasks</h1>
-            <p className="text-sm text-gray-600">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Today's tasks</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               {remaining === 0 ? "Nothing left to do" : `${remaining} left to finish`}
             </p>
           </header>
 
           <TaskForm submitLabel="Add task" onSubmit={addTodo} categories={categories} resetOnSave />
 
-          <section className="space-y-3 border-t border-gray-200 pt-4" aria-label="Search and filters">
+          <section
+            className="space-y-3 border-t border-gray-200 pt-4 dark:border-gray-700"
+            aria-label="Search and filters"
+          >
             <input
               type="search"
               value={query}
@@ -391,7 +387,9 @@ export default function Home({ user, onLogout }) {
                   key={f}
                   onClick={() => setStatus(f)}
                   className={`rounded-full px-3 py-1 text-sm capitalize ${
-                    status === f ? "bg-gray-900 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    status === f
+                      ? "bg-gray-900 text-white dark:bg-teal-600"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                   }`}
                 >
                   {f}
@@ -441,23 +439,27 @@ export default function Home({ user, onLogout }) {
               {filtersActive && (
                 <button
                   onClick={resetFilters}
-                  className="self-end rounded-lg bg-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-300"
+                  className="self-end rounded-lg bg-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                 >
                   Clear filters
                 </button>
               )}
             </div>
 
-            {manual && <p className="text-xs text-gray-500">Drag tasks by the handle, or use the arrows, to reorder.</p>}
+            {manual && (
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Drag tasks by the handle, or use the arrows, to reorder.
+              </p>
+            )}
           </section>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
           <ul className="max-h-[28rem] space-y-2 overflow-y-auto">
-            {loading && <li className="text-sm text-gray-500">Loading your tasks...</li>}
+            {loading && <li className="text-sm text-gray-500 dark:text-gray-400">Loading your tasks...</li>}
 
             {!loading && visible.length === 0 && (
-              <li className="rounded-lg border border-dashed border-gray-300 py-6 text-center text-sm text-gray-500">
+              <li className="rounded-lg border border-dashed border-gray-300 py-6 text-center text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400">
                 {todos.length === 0
                   ? "No tasks yet. Add your first one above."
                   : "No tasks match these filters."}
@@ -471,7 +473,10 @@ export default function Home({ user, onLogout }) {
 
               if (editingId === todo.id) {
                 return (
-                  <li key={todo.id} className="rounded-lg border border-teal-600 bg-white px-3 py-3">
+                  <li
+                    key={todo.id}
+                    className="rounded-lg border border-teal-600 bg-white px-3 py-3 dark:bg-gray-800"
+                  >
                     <TaskForm
                       initial={{
                         title: todo.title || "",
@@ -515,7 +520,7 @@ export default function Home({ user, onLogout }) {
                     setDragId(null);
                     setOverId(null);
                   }}
-                  className={`flex items-start gap-3 rounded-lg border border-l-4 border-gray-200 bg-white px-3 py-2 ${
+                  className={`flex items-start gap-3 rounded-lg border border-l-4 border-gray-200 bg-white px-3 py-2 dark:border-gray-700 dark:bg-gray-800 ${
                     style.bar
                   } ${dragId === todo.id ? "opacity-40" : ""} ${
                     overId === todo.id && dragId !== todo.id ? "ring-2 ring-teal-600" : ""
@@ -542,7 +547,9 @@ export default function Home({ user, onLogout }) {
                   <div className="min-w-0 flex-1">
                     <span
                       className={`block break-words ${
-                        todo.completed ? "text-gray-400 line-through" : "text-gray-900"
+                        todo.completed
+                          ? "text-gray-400 line-through dark:text-gray-500"
+                          : "text-gray-900 dark:text-gray-100"
                       }`}
                     >
                       {todo.title}
@@ -553,7 +560,9 @@ export default function Home({ user, onLogout }) {
                       {todo.dueDate && (
                         <span
                           className={`rounded-full px-2 py-0.5 ${
-                            overdue ? "bg-red-100 font-medium text-red-700" : "bg-gray-100 text-gray-700"
+                            overdue
+                              ? "bg-red-100 font-medium text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                              : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                           }`}
                         >
                           {overdue ? "Overdue: " : "Due "}
@@ -563,7 +572,7 @@ export default function Home({ user, onLogout }) {
                       {todo.category && (
                         <button
                           onClick={() => setCategoryFilter(todo.category)}
-                          className="rounded-full bg-teal-50 px-2 py-0.5 text-teal-800 hover:bg-teal-100"
+                          className="rounded-full bg-teal-50 px-2 py-0.5 text-teal-800 hover:bg-teal-100 dark:bg-teal-900/40 dark:text-teal-300 dark:hover:bg-teal-900/60"
                           title="Show only this list"
                         >
                           {todo.category}
@@ -573,7 +582,7 @@ export default function Home({ user, onLogout }) {
                         <button
                           key={tag}
                           onClick={() => setTagFilter(tag)}
-                          className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600 hover:bg-gray-200"
+                          className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                           title="Show only this tag"
                         >
                           #{tag}
@@ -589,7 +598,7 @@ export default function Home({ user, onLogout }) {
                           onClick={() => moveTodo(todo.id, visible[i - 1].id)}
                           disabled={i === 0}
                           aria-label={`Move "${todo.title}" up`}
-                          className="text-gray-400 hover:text-gray-900 disabled:opacity-30"
+                          className="text-gray-400 hover:text-gray-900 disabled:opacity-30 dark:hover:text-white"
                         >
                           ↑
                         </button>
@@ -597,7 +606,7 @@ export default function Home({ user, onLogout }) {
                           onClick={() => moveTodo(todo.id, visible[i + 1].id)}
                           disabled={i === visible.length - 1}
                           aria-label={`Move "${todo.title}" down`}
-                          className="text-gray-400 hover:text-gray-900 disabled:opacity-30"
+                          className="text-gray-400 hover:text-gray-900 disabled:opacity-30 dark:hover:text-white"
                         >
                           ↓
                         </button>
@@ -606,14 +615,14 @@ export default function Home({ user, onLogout }) {
                     <button
                       onClick={() => setEditingId(todo.id)}
                       aria-label={`Edit "${todo.title}"`}
-                      className="text-gray-400 hover:text-teal-700"
+                      className="text-gray-400 hover:text-teal-700 dark:hover:text-teal-400"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => deleteTodo(todo.id)}
                       aria-label={`Delete "${todo.title}"`}
-                      className="text-gray-400 hover:text-red-600"
+                      className="text-gray-400 hover:text-red-600 dark:hover:text-red-400"
                     >
                       Delete
                     </button>
@@ -624,7 +633,8 @@ export default function Home({ user, onLogout }) {
           </ul>
         </div>
       </main>
-       <About />
+
+      <About />
     </div>
   );
 }
